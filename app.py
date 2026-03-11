@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, request
 import psycopg2, requests
 from psycopg2 import sql
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 DB_NAME = "datamundi"
 DB_USER = "mapamundi"
@@ -154,10 +156,12 @@ def agregar_favorito(nombre):
         cur.close()
         conn.close()
 
+
 @app.route("/pais/<nombre>", methods=["GET"])
 def obtener_pais(nombre):
     conn = get_connection()
     cur = conn.cursor()
+    is_favorite = False # Inicializamos la bandera
 
     # 1️⃣ Buscar en base de datos
     cur.execute("""
@@ -166,10 +170,16 @@ def obtener_pais(nombre):
         WHERE LOWER(nombre) = %s
     """, (nombre.lower(),))
 
-
     pais = cur.fetchone()
 
     if pais:
+        # Si el país se encontró en la base de datos, verificamos si es favorito
+        cur.execute("""
+            SELECT 1 FROM favoritos WHERE id = %s
+        """, (pais[0],))
+        if cur.fetchone():
+            is_favorite = True
+
         cur.close()
         conn.close()
         return jsonify({
@@ -178,7 +188,8 @@ def obtener_pais(nombre):
             "capital": pais[2],
             "moneda": pais[3],
             "recurso_visual": pais[4],
-            "fuente": "base de datos"
+            "fuente": "base de datos",
+            "is_favorite": is_favorite # ¡Agregamos esta nueva propiedad!
         })
 
     # 2️⃣ Si no existe → consultar API externa
@@ -209,6 +220,9 @@ def obtener_pais(nombre):
 
         conn.commit()
 
+        # Después de insertar, verificamos si es favorito (en este caso, no lo es aún)
+        is_favorite = False # Por defecto, un país recién traído de la API externa no es favorito
+
         cur.close()
         conn.close()
 
@@ -218,7 +232,8 @@ def obtener_pais(nombre):
             "capital": capital,
             "moneda": moneda,
             "recurso_visual": bandera,
-            "fuente": "api externa"
+            "fuente": "api externa",
+            "is_favorite": is_favorite # ¡Agregamos esta nueva propiedad!
         })
 
     except Exception as e:
@@ -227,9 +242,53 @@ def obtener_pais(nombre):
         conn.close()
         return jsonify({"error": str(e)}), 500
 
+# ... (tu código anterior, justo después de @app.route("/agregarFav/<nombre>", methods=["POST"])) ...
 
-# --- INICIO DE APLICACIÓN ---
+@app.route("/removerFav/<nombre>", methods=["DELETE"])
+def remover_favorito(nombre):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        # 1️⃣ Verificar que exista en paises para obtener el ID
+        cur.execute("""
+            SELECT id
+            FROM paises
+            WHERE LOWER(nombre) LIKE %s
+        """, (f"%{nombre.lower()}%",))
+
+        pais_id_tuple = cur.fetchone()
+
+        if not pais_id_tuple:
+            return jsonify({"error": "El país no existe en la base de datos de países"}), 404
+
+        pais_id = pais_id_tuple[0]
+
+        # 2️⃣ Eliminar de favoritos
+        cur.execute("""
+            DELETE FROM favoritos
+            WHERE id = %s;
+        """, (pais_id,))
+
+        if cur.rowcount == 0:
+            conn.rollback()
+            return jsonify({"mensaje": "El país no estaba en favoritos para remover"}), 200 # O 404 si prefieres
+
+        conn.commit()
+        return jsonify({
+            "mensaje": "País removido de favoritos",
+            "id": pais_id
+        }), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cur.close()
+        conn.close()
+
 if __name__ == "__main__":
     create_database()
     create_tables()
-    app.run(debug=True)
+    app.run(debug=True, port=8000)

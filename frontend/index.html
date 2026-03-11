@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Países</title>
+    <!-- Incluye Tailwind CSS desde CDN (para desarrollo) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Busca tu País</h1>
+
+        <div class="mb-4">
+            <input type="text" id="countryInput" placeholder="Escribe el nombre del país"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <button id="searchButton"
+                class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">
+            Buscar País
+        </button>
+
+        <div id="countryCard" class="mt-8 hidden bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <h2 class="text-2xl font-semibold text-center mb-4 text-gray-700">
+                <span id="countryName"></span>
+                <span id="favoriteTag" class="ml-2 text-sm px-2 py-1 rounded-full font-medium hidden"></span>
+            </h2>
+            <img id="countryImage" src="" alt="Bandera del país" class="w-32 h-20 mx-auto mb-4 object-cover rounded-md shadow-sm">
+            <p class="text-gray-600 mb-2"><strong class="text-gray-800">Capital:</strong> <span id="countryCapital"></span></p>
+            <p class="text-gray-600 mb-2"><strong class="text-gray-800">Moneda:</strong> <span id="countryCurrency"></span></p>
+            <p class="text-gray-600 mb-4"><strong class="text-gray-800">Fuente:</strong> <span id="countrySource"></span></p>
+
+            <button id="favoriteButton"
+                    class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition duration-300">
+                ⭐ Agregar a Favoritos
+            </button>
+        </div>
+
+        <div id="errorMessage" class="mt-4 text-red-600 text-center hidden"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

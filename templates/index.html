@@ -82,6 +82,10 @@
                 Bitácora Privada
                 <div class="indicator absolute bottom-0 left-0 w-full h-1 bg-amber-400 hidden"></div>
             </button>
+            <button onclick="switchTab('nosotros')" id="tab-nosotros" class="pb-6 text-[12px] font-black tracking-[0.3em] uppercase transition-all relative light-mode-black opacity-40">
+                Nosotros
+                <div class="indicator absolute bottom-0 left-0 w-full h-1 bg-amber-400 hidden"></div>
+            </button>
         </div>
 
         <!-- SECCIÓN: EXPLORAR -->
@@ -120,6 +124,20 @@
                 <div id="fav-detail-container"></div>
             </div>
         </section>
+
+        <section id="section-nosotros" class="hidden">
+            <div id="nosotros-main-view">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-4">
+                    <h3 class="text-7xl md:text-8xl font-serif leading-none light-mode-black">Nosotros</h3>
+                    <span id="nosotros-tagline" class="bg-amber-400 text-black px-6 py-2 rounded-full text-[11px] font-black tracking-widest uppercase shadow-lg">
+                        Conoce nuestro equipo
+                    </span>
+                </div>
+                <div id="nosotros-list" class="grid gap-4">
+                    <!-- Aquí se inyectará el contenido vía JS -->
+                </div>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -143,18 +161,30 @@
         function switchTab(tab) {
             document.getElementById('section-explorar').classList.toggle('hidden', tab !== 'explorar');
             document.getElementById('section-favoritos').classList.toggle('hidden', tab !== 'favoritos');
+            document.getElementById('section-nosotros').classList.toggle('hidden', tab !== 'nosotros');
             const btnEx = document.getElementById('tab-explorar');
             const btnFav = document.getElementById('tab-favoritos');
+            const btnNos = document.getElementById('tab-nosotros');
             if(tab === 'explorar') {
                 btnEx.classList.remove('opacity-40'); btnFav.classList.add('opacity-40');
                 btnEx.querySelector('.indicator').classList.remove('hidden');
                 btnFav.querySelector('.indicator').classList.add('hidden');
-            } else {
+            } else if (tab === 'favoritos'){
                 btnFav.classList.remove('opacity-40'); btnEx.classList.add('opacity-40');
                 btnFav.querySelector('.indicator').classList.remove('hidden');
                 btnEx.querySelector('.indicator').classList.add('hidden');
                 cerrarDetalle();
                 cargarFavoritos();
+            } else if (tab === 'nosotros'){
+                btnNos.classList.remove('opacity-40');
+                btnEx.classList.add('opacity-40');
+                btnFav.classList.add('opacity-40');
+
+                btnNos.querySelector('.indicator').classList.remove('hidden');
+                btnEx.querySelector('.indicator').classList.add('hidden');
+                btnFav.querySelector('.indicator').classList.add('hidden');
+
+                cargarNosotros();
             }
         }
 
@@ -197,6 +227,23 @@
                         </button>
                     </div>
                 `).join('');
+                lucide.createIcons();
+            } catch (err) { showToast("Error al conectar", "error"); }
+        }
+
+        async function cargarNosotros() {
+            const list = document.getElementById('nosotros-list');
+            try {
+                const res = await fetch(`${API_URL}/Nosotros`);
+                const data = await res.json();
+
+                list.innerHTML = data.map(f => `
+                    <div class="bg-white dark:bg-neutral-950 p-10 rounded shadow-lg border border-slate-100 dark:border-neutral-900">
+                        <h4 class="text-3xl font-bold mb-4">${f.nombre}</h4>
+                        <p class="text-base text-gray-700 dark:text-gray-300">${f.descripcion}</p>
+                    </div>
+                `).join('');
+
                 lucide.createIcons();
             } catch (err) { showToast("Error al conectar", "error"); }
         }
