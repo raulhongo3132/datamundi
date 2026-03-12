@@ -1,291 +1,125 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Datamundi - First Class Global</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        :root {
-            --accent: #fbbf24;
-            --heritage-dark: #0f172a;
-        }
-
-        body {
-            font-family: 'Playfair Display', serif;
-            transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s ease;
-            background-image: radial-gradient(#e2e8f0 0.5px, transparent 0.5px);
-            background-size: 24px 24px;
-        }
-
-        .dark body {
-            background-color: #000000;
-            color: #ffffff !important;
-            background-image: radial-gradient(#1a1a1a 0.5px, transparent 0.5px);
-        }
-
-        .light-mode-black { color: #000000 !important; }
-        .dark .light-mode-black { color: #ffffff !important; }
-
-        .font-sans-ui { font-family: system-ui, -apple-system, sans-serif; }
-
-        .input-container {
-            background-color: #ffffff !important;
-            border: 1px solid #e2e8f0;
-            color: #000000 !important;
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
-        }
-
-        @keyframes takeoff {
-            0% { transform: translateY(0) rotate(-45deg); opacity: 0; }
-            50% { transform: translateY(-10px) rotate(-45deg); opacity: 1; }
-            100% { transform: translateY(-25px) rotate(-45deg); opacity: 0; }
-        }
-        .animate-takeoff { animation: takeoff 1.5s infinite ease-in-out; }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datamundi - First Class Global</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body class="bg-[#fcfcfc] text-black dark:text-white min-h-screen pb-32 transition-colors">
 
-    <div id="toast-container" class="fixed bottom-8 right-8 z-[100] flex flex-col gap-3"></div>
+<div id="toast-container" class="fixed bottom-8 right-8 z-[100] flex flex-col gap-3"></div>
+<header class="max-w-6xl mx-auto py-20 px-6 flex flex-col items-center relative">
+<div class="absolute top-10 right-6">
+<button onclick="toggleDarkMode()" class="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-full shadow-sm text-[10px] font-black tracking-[0.2em] uppercase hover:shadow-md transition-all active:scale-95 light-mode-black">
+<i data-lucide="moon" id="moon-icon" class="w-3.5 h-3.5"></i>
 
-    <!-- HEADER -->
-    <header class="max-w-6xl mx-auto py-20 px-6 flex flex-col items-center relative">
-        <div class="absolute top-10 right-6">
-            <button onclick="toggleDarkMode()" class="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-full shadow-sm text-[10px] font-black tracking-[0.2em] uppercase hover:shadow-md transition-all active:scale-95 light-mode-black">
-                <i data-lucide="moon" id="moon-icon" class="w-3.5 h-3.5"></i>
-                Vuelo Nocturno
-            </button>
-        </div>
+Vuelo Nocturno
 
-        <div class="flex items-center gap-6 mb-4 group cursor-default">
-            <div class="w-10 h-10 bg-amber-400 rotate-45 group-hover:rotate-[225deg] transition-transform duration-1000 shadow-lg"></div>
-            <h1 class="text-7xl md:text-8xl font-black tracking-tighter uppercase leading-none light-mode-black transition-colors">Datamundi</h1>
-        </div>
-        <p class="text-[12px] font-black tracking-[0.6em] uppercase light-mode-black ml-6 transition-colors">First Class Global</p>
-    </header>
+</button>
 
-    <main class="max-w-5xl mx-auto px-6">
-        
-        <!-- PESTAÑAS -->
-        <div class="flex justify-center gap-12 mb-20 border-b border-slate-100 dark:border-neutral-900">
-            <button onclick="switchTab('explorar')" id="tab-explorar" class="pb-6 text-[12px] font-black tracking-[0.3em] uppercase transition-all relative light-mode-black">
-                Búsqueda
-                <div class="indicator absolute bottom-0 left-0 w-full h-1 bg-amber-400"></div>
-            </button>
-            <button onclick="switchTab('favoritos')" id="tab-favoritos" class="pb-6 text-[12px] font-black tracking-[0.3em] uppercase transition-all relative light-mode-black opacity-40">
-                Bitácora Privada
-                <div class="indicator absolute bottom-0 left-0 w-full h-1 bg-amber-400 hidden"></div>
-            </button>
-        </div>
+</div>
 
-        <!-- SECCIÓN: EXPLORAR -->
-        <section id="section-explorar" class="space-y-12">
-            <div class="bg-white dark:bg-neutral-950 p-10 md:p-14 rounded-sm shadow-xl border border-slate-100 dark:border-neutral-900 relative">
-                <div class="absolute top-0 left-0 h-1.5 w-full bg-amber-400"></div>
-                <h3 class="text-3xl mb-10 light-mode-black">Destino global...</h3>
-                
-                <div class="flex flex-col md:flex-row gap-0 items-stretch">
-                    <div class="flex-1 relative input-container p-5">
-                        <input type="text" id="search-input" onkeypress="handleSearch(event)" placeholder="ej: colombia" class="font-sans-ui w-full bg-transparent border-none outline-none text-2xl font-light py-1 text-black">
-                    </div>
-                    <button onclick="buscarPais()" class="bg-amber-400 text-black px-12 py-5 font-black text-[12px] tracking-widest uppercase hover:bg-white hover:text-amber-600 transition-all active:scale-95 shadow-sm hover:shadow-lg">
-                        ¡Descubre!
-                    </button>
-                </div>
-            </div>
-            <div id="search-result-container"></div>
-        </section>
+<div class="flex items-center gap-6 mb-4 group cursor-default">
+<div class="w-10 h-10 bg-amber-400 rotate-45 group-hover:rotate-[225deg] transition-transform duration-1000 shadow-lg"></div>
+<h1 class="text-7xl md:text-8xl font-black tracking-tighter uppercase leading-none light-mode-black transition-colors">Datamundi</h1>
+</div>
 
-        <!-- SECCIÓN: FAVORITOS -->
-        <section id="section-favoritos" class="hidden">
-            <div id="fav-main-view">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-4">
-                    <h3 class="text-7xl md:text-8xl font-serif leading-none light-mode-black">Favoritos</h3>
-                    <span id="fav-counter" class="bg-amber-400 text-black px-6 py-2 rounded-full text-[11px] font-black tracking-widest uppercase shadow-lg">
-                        0 DESTINOS FAVORITOS
-                    </span>
-                </div>
-                <div id="fav-list" class="grid gap-4"></div>
-            </div>
-            <div id="fav-detail" class="hidden">
-                <button onclick="cerrarDetalle()" class="mb-10 flex items-center gap-3 light-mode-black opacity-80 hover:opacity-100 hover:text-amber-500 text-[11px] font-black uppercase tracking-[0.3em] transition-all">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver a favoritos
-                </button>
-                <div id="fav-detail-container"></div>
-            </div>
-        </section>
-    </main>
+<p class="text-[12px] font-black tracking-[0.6em] uppercase light-mode-black ml-6 transition-colors">First Class Global</p>
 
-    <script>
-        // API_URL vacío porque corre en el mismo servidor FastAPI
-        const API_URL = "";
+</header>
 
-        function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
-        }
 
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `p-4 px-6 bg-white dark:bg-neutral-900 border-l-4 ${type === 'error' ? 'border-red-500' : 'border-amber-400'} shadow-2xl flex items-center gap-4 text-[11px] font-black uppercase tracking-widest light-mode-black`;
-            toast.innerHTML = `<i data-lucide="${type === 'error' ? 'x-circle' : 'check-circle'}" class="w-4 h-4 ${type === 'error' ? 'text-red-500' : 'text-amber-500'}"></i> ${message}`;
-            container.appendChild(toast);
-            lucide.createIcons();
-            setTimeout(() => toast.remove(), 3000);
-        }
+<main class="max-w-5xl mx-auto px-6">
 
-        function switchTab(tab) {
-            document.getElementById('section-explorar').classList.toggle('hidden', tab !== 'explorar');
-            document.getElementById('section-favoritos').classList.toggle('hidden', tab !== 'favoritos');
-            const btnEx = document.getElementById('tab-explorar');
-            const btnFav = document.getElementById('tab-favoritos');
-            if(tab === 'explorar') {
-                btnEx.classList.remove('opacity-40'); btnFav.classList.add('opacity-40');
-                btnEx.querySelector('.indicator').classList.remove('hidden');
-                btnFav.querySelector('.indicator').classList.add('hidden');
-            } else {
-                btnFav.classList.remove('opacity-40'); btnEx.classList.add('opacity-40');
-                btnFav.querySelector('.indicator').classList.remove('hidden');
-                btnEx.querySelector('.indicator').classList.add('hidden');
-                cerrarDetalle();
-                cargarFavoritos();
-            }
-        }
+<!-- PESTAÑAS -->
 
-        function handleSearch(e) { if(e.key === 'Enter') buscarPais(); }
+<div class="flex justify-center gap-12 mb-20 border-b border-slate-100 dark:border-neutral-900">
+<button onclick="switchTab('explorar')" id="tab-explorar" class="pb-6 text-[12px] font-black tracking-[0.3em] uppercase transition-all relative light-mode-black">
 
-        function normalize(text) { return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); }
+Búsqueda
 
-        async function buscarPais() {
-            const input = document.getElementById('search-input').value;
-            if(!input || input.length < 3) return;
-            const container = document.getElementById('search-result-container');
-            try {
-                const res = await fetch(`${API_URL}/pais/${normalize(input)}`);
-                const data = await res.json();
-                if(!res.ok) throw new Error(data.detail);
-                container.innerHTML = renderTicket(data, true);
-                lucide.createIcons();
-            } catch (err) { showToast(err.message, "error"); }
-        }
+<div class="indicator absolute bottom-0 left-0 w-full h-1 bg-amber-400"></div>
+</button>
 
-        async function cargarFavoritos() {
-            const list = document.getElementById('fav-list');
-            try {
-                const res = await fetch(`${API_URL}/favoritos`);
-                const data = await res.json();
-                document.getElementById('fav-counter').innerText = `${data.length} DESTINOS ARCHIVADOS`;
-                
-                // DISEÑO ELITE: FONDO NEGRO, ID AMARILLO, NOMBRE BLANCO
-                list.innerHTML = data.map(f => `
-                    <div onclick="verDetalleFavorito('${f.nombre}')" class="bg-black p-10 border border-white/10 flex items-center justify-between hover:border-amber-400 transition-all cursor-pointer shadow-2xl">
-                        <div class="flex items-center gap-14">
-                            <span class="text-7xl font-serif text-amber-400">${f.id}</span>
-                            <div>
-                                <p class="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] mb-2">PASAPORTE CONFIRMADO</p>
-                                <h4 class="text-5xl font-light text-white">${f.nombre}</h4>
-                            </div>
-                        </div>
-                        <button onclick="eliminarFavorito('${f.id}', '${f.nombre}', event)" class="text-white opacity-40 hover:opacity-100 hover:text-red-500 p-4 transition-all">
-                            <i data-lucide="trash-2" class="w-8 h-8"></i>
-                        </button>
-                    </div>
-                `).join('');
-                lucide.createIcons();
-            } catch (err) { showToast("Error al conectar", "error"); }
-        }
+<button onclick="switchTab('favoritos')" id="tab-favoritos" class="pb-6 text-[12px] font-black tracking-[0.3em] uppercase transition-all relative light-mode-black opacity-40">
 
-        async function guardarFavorito(id, nombre) {
-            try {
-                const res = await fetch(`${API_URL}/favoritos`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({id, nombre})
-                });
-                if(!res.ok) showToast("Ya existe en su bitácora", "error");
-                else showToast(`¡${nombre} añadido a su bitácora!`);
-            } catch (e) { showToast("Error de conexión", "error"); }
-        }
+Bitácora
 
-        async function eliminarFavorito(id, nombre, e) {
-            e.stopPropagation();
-            if(!confirm(`¿Remover ${nombre} de su colección?`)) return;
-            try {
-                await fetch(`${API_URL}/favoritos/${id}`, { method: 'DELETE' });
-                cargarFavoritos();
-            } catch (e) { showToast("Error al eliminar", "error"); }
-        }
+<div class="indicator absolute bottom-0 left-0 w-full h-1 bg-amber-400 hidden"></div>
 
-        async function verDetalleFavorito(nombre) {
-            document.getElementById('fav-main-view').classList.add('hidden');
-            const detail = document.getElementById('fav-detail');
-            const container = document.getElementById('fav-detail-container');
-            detail.classList.remove('hidden');
-            try {
-                const res = await fetch(`${API_URL}/pais/${normalize(nombre)}`);
-                const data = await res.json();
-                container.innerHTML = renderTicket(data, false);
-                lucide.createIcons();
-            } catch (e) { container.innerHTML = `<p class="text-red-500">Error al sincronizar datos.</p>`; }
-        }
+</button>
 
-        function cerrarDetalle() {
-            document.getElementById('fav-main-view').classList.remove('hidden');
-            document.getElementById('fav-detail').classList.add('hidden');
-        }
+</div>
 
-        function renderTicket(data, showAddBtn) {
-            const btnFav = "flex-1 lg:flex-none text-center px-10 py-5 text-[11px] font-black tracking-widest bg-amber-400 text-black uppercase hover:bg-white hover:text-amber-600 transition-all shadow-sm hover:shadow-lg";
-            
-            return `
-                <div class="w-full bg-[#0a0a0a] rounded-sm shadow-2xl overflow-hidden border border-white/5 animate-fade-in">
-                    <div class="h-2 w-full bg-amber-400"></div>
-                    <div class="p-10 md:p-16">
-                        <div class="flex flex-col lg:flex-row justify-between items-start mb-16 border-b border-white/10 pb-12">
-                            <div>
-                                <span class="text-[11px] font-black tracking-[0.4em] text-amber-400 uppercase">First Class Global</span>
-                                <h2 class="text-6xl md:text-8xl font-serif text-white mt-4 leading-none">${data.nombre}</h2>
-                            </div>
-                            <div class="text-left lg:text-right mt-8 lg:mt-0">
-                                <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest">GATEWAY</p>
-                                <p class="text-5xl md:text-6xl font-light text-amber-400 tracking-tighter">${data.id}</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
-                            <img src="${data.bandera}" class="w-full h-full object-cover shadow-2xl" alt="Flag">
-                            <div class="grid grid-cols-2 gap-x-10 gap-y-12 font-sans-ui">
-                                ${[
-                                    {l: 'CAPITAL', v: data.capital, i: 'map-pin'},
-                                    {l: 'POBLACIÓN', v: data.poblacion, i: 'users'},
-                                    {l: 'IDIOMAS', v: data.idiomas, i: 'languages'},
-                                    {l: 'SUPERFICIE', v: data.area, i: 'maximize-2'},
-                                    {l: 'REGIÓN', v: data.region, i: 'globe'},
-                                    {l: 'HUSO HORARIO', v: data.zonaHoraria, i: 'clock'}
-                                ].map(item => `
-                                    <div class="space-y-2">
-                                        <p class="text-[10px] font-black text-amber-400 uppercase tracking-widest flex items-center gap-2">
-                                            <i data-lucide="${item.i}" class="w-3.5 h-3.5"></i> ${item.l}
-                                        </p>
-                                        <p class="text-xl font-bold text-white leading-tight">${item.v || 'N/A'}</p>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                        <div class="mt-16 flex justify-center gap-4 w-full">
-                            <a href="${data.mapa}" target="_blank" class="flex-1 lg:flex-none text-center px-10 py-5 text-[11px] font-black tracking-widest bg-[#1a1c2c] text-white uppercase hover:bg-white hover:text-black transition-all">Ver Mapas</a>
-                            ${showAddBtn ? `<button onclick="guardarFavorito('${data.id}', '${data.nombre}')" class="${btnFav}">favoritos</button>` : ''}
-                       </div>
-                    </div>
-                </div>
-            `;
-        }
-        lucide.createIcons();
-    </script>
+
+<!-- SECCIÓN: EXPLORAR -->
+
+<section id="section-explorar" class="space-y-12">
+<div class="bg-white dark:bg-neutral-950 p-10 md:p-14 rounded-sm shadow-xl border border-slate-100 dark:border-neutral-900 relative">
+<div class="absolute top-0 left-0 h-1.5 w-full bg-amber-400"></div>
+<h3 class="text-3xl mb-10 light-mode-black">Destino global...</h3>
+<div class="flex flex-col md:flex-row gap-0 items-stretch">
+<div class="flex-1 relative input-container p-5">
+<input type="text" id="search-input" onkeypress="handleSearch(event)" placeholder="ej: colombia" class="font-sans-ui w-full bg-transparent border-none outline-none text-2xl font-light py-1 text-black">
+</div>
+<button onclick="buscarPais()" class="bg-amber-400 text-black px-12 py-5 font-black text-[12px] tracking-widest uppercase hover:bg-white hover:text-amber-600 transition-all active:scale-95 shadow-sm hover:shadow-lg">
+
+¡Descubre!
+
+</button>
+
+</div>
+
+</div>
+
+<div id="search-result-container"></div>
+
+</section>
+
+
+<!-- SECCIÓN: FAVORITOS -->
+
+<section id="section-favoritos" class="hidden">
+<div id="fav-main-view">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-4">
+<h3 class="text-7xl md:text-8xl font-serif leading-none light-mode-black">Favoritos</h3>
+<span id="fav-counter" class="bg-amber-400 text-black px-6 py-2 rounded-full text-[11px] font-black tracking-widest uppercase shadow-lg">
+
+0 Destinos
+
+</span>
+
+</div>
+
+<div id="fav-list" class="grid gap-4"></div>
+
+</div>
+
+<div id="fav-detail" class="hidden">
+
+<button onclick="cerrarDetalle()" class="mb-10 flex items-center gap-3 light-mode-black opacity-80 hover:opacity-100 hover:text-amber-500 text-[11px] font-black uppercase tracking-[0.3em] transition-all">
+
+<i data-lucide="arrow-left" class="w-4 h-4"></i> Volver a favoritos
+
+</button>
+
+<div id="fav-detail-container"></div>
+
+</div>
+
+</section>
+
+</main>
+
+<!-- Vinculación de JS usando Flask -->
+
+<script src="{{ url_for('static', filename='js/javita.js') }}"></script>
+
 </body>
-</html>
+
+</html> 

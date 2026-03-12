@@ -1,235 +1,274 @@
-from flask import Flask, jsonify, request
-import psycopg2, requests
+from flask import Flask, jsonify, request, render_template
+import psycopg2
+import requests
+import unicodedata
 from psycopg2 import sql
 
 app = Flask(__name__)
 
+# --- CONFIGURACIÓN DE BASE DE DATOS ---
 DB_NAME = "datamundi"
 DB_USER = "mapamundi"
 DB_PASSWORD = "mundi123"
 DB_HOST = "localhost"
 
-# --- CREAR BASE DE DATOS SI NO EXISTE ---
-def create_database():
-    conn = psycopg2.connect(
-        dbname="postgres",  # base administrativa
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST
-    )
-    conn.autocommit = True
-    cur = conn.cursor()
+# --- DICCIONARIOS DE TRADUCCIÓN ---
+TRADUCCION_REGIONES = {
+    "Americas": "Américas",
+    "Europe": "Europa",
+    "Africa": "África",
+    "Oceania": "Oceanía",
+    "Asia": "Asia",
+    "Antarctic": "Antártida"
+}
 
-    cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (DB_NAME,))
-    exists = cur.fetchone()
+TRADUCCION_IDIOMAS = {
+    "Spanish": "Español", "English": "Inglés", "French": "Francés",
+    "Portuguese": "Portugués", "German": "Alemán", "Italian": "Italiano",
+    "Chinese": "Chino", "Japanese": "Japonés", "Arabic": "Árabe",
+    "Russian": "Ruso", "Dutch": "Neerlandés", "Hindi": "Hindi", 
+    "Korean": "Coreano", "Greek": "Griego", "Turkish": "Turco", 
+    "Vietnamese": "Vietnamita", "Thai": "Tailandés", "Māori": "Maorí", 
+    "Danish": "Danés", "Greenlandic": "Groenlandés", "Mandarin": "Mandarín"
+}
 
-    if not exists:
-        cur.execute(sql.SQL("CREATE DATABASE {}").format(
-            sql.Identifier(DB_NAME)
-        ))
-        print("Base de datos creada.")
+TRADUCCION_CAPITALES = {
+    "Mexico City": "Ciudad de México",
+    "Guatemala City": "Ciudad de Guatemala",
+    "Panama City": "Ciudad de Panamá",
+    "Brasília": "Brasilia",
+    "Washington, D.C.": "Washington D.C.",
+    "Beijing": "Pekín",
+    "London": "Londres",
+    "Nuuk": "Nuuk (Godthåb)"
+}
 
-    cur.close()
-    conn.close()
+# Sinónimos para normalizar búsquedas que la API no procesa bien en español
+SINONIMOS_ESPANOL = {
+    "eeuu": "estados unidos",
+    "usa": "estados unidos",
+    "holanda": "países bajos",
+    "inglaterra": "reino unido",
+    "corea": "corea del sur",
+    "groelandia": "groenlandia",
+    "china": "china"
+}
 
+def normalizar_texto(texto):
+    """Elimina acentos y convierte a minúsculas para comparaciones precisas."""
+    if not texto: return ""
+    texto = unicodedata.normalize('NFD', texto)
+    texto = texto.encode('ascii', 'ignore').decode("utf-8")
+    return texto.lower().strip()
 
-# --- CREAR TABLAS SI NO EXISTEN ---
-def create_tables():
-    conn = psycopg2.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST
-    )
-    cur = conn.cursor()
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS paises (
-            id VARCHAR(3) PRIMARY KEY,
-            nombre VARCHAR(100) NOT NULL,
-            capital VARCHAR(100),
-            moneda VARCHAR(10),
-            recurso_visual TEXT
-        );
-    """)
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS favoritos (
-            id VARCHAR(3) PRIMARY KEY,
-            nombre VARCHAR(100) NOT NULL
-        );
-    """)
-
-    conn.commit()
-    cur.close()
-    conn.close()
-    print("Tabla verificada/creada.")
-
-
-# --- CONEXIÓN NORMAL A LA BD ---
 def get_connection():
-    return psycopg2.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST
-    )
+    """Establece la conexión con PostgreSQL."""
+    return psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
 
+def init_db():
+    """Inicializa el esquema y aplica migraciones de columnas faltantes."""
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS paises (
+                id VARCHAR(3) PRIMARY KEY,
+                nombre VARCHAR(100) NOT NULL,
+                nombre_normalizado VARCHAR(100),
+                capital VARCHAR(100),
+                moneda VARCHAR(100),
+                recurso_visual TEXT,
+                poblacion VARCHAR(50),
+                region VARCHAR(50),
+                area VARCHAR(50),
+                mapa TEXT,
+                idiomas TEXT,
+                huso_horario TEXT
+            );
+        """)
+
+        columnas = [
+            ("idiomas", "TEXT"), ("huso_horario", "TEXT"), ("nombre_normalizado", "VARCHAR(100)"),
+            ("poblacion", "VARCHAR(50)"), ("region", "VARCHAR(50)"), ("area", "VARCHAR(50)"),
+            ("mapa", "TEXT")
+        ]
+        
+        for col, tipo in columnas:
+            cur.execute(f"""
+                DO $$ 
+                BEGIN 
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                    WHERE table_name='paises' AND column_name='{col}') THEN 
+                        ALTER TABLE paises ADD COLUMN {col} {tipo}; 
+                    END IF; 
+                END $$;
+            """)
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS favoritos (
+                id VARCHAR(3) PRIMARY KEY REFERENCES paises(id) ON DELETE CASCADE
+            );
+        """)
+
+        cur.execute("""
+            DO $$ 
+            BEGIN 
+                IF EXISTS (SELECT 1 FROM information_schema.columns 
+                WHERE table_name='favoritos' AND column_name='nombre') THEN 
+                    ALTER TABLE favoritos DROP COLUMN nombre; 
+                END IF; 
+            END $$;
+        """)
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"!!! Error de inicialización: {e}")
 
 # --- RUTAS ---
+
 @app.route("/")
 def home():
-    return jsonify({"mensaje": "API con Flask y PostgreSQL funcionando"})
+    return render_template("index.html")
 
-
-@app.route("/pais", methods=["POST"])
-def insertar_pais():
-    data = request.json
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-        cur.execute("""
-            INSERT INTO paises (id, nombre, capital, moneda, recurso_visual)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (
-            data["id"],
-            data["nombre"],
-            data["capital"],
-            data["moneda"],
-            data["recurso_visual"]
-        ))
-
-        conn.commit()
-        return jsonify({"mensaje": "País insertado correctamente"}), 201
-
-    except Exception as e:
-        conn.rollback()
-        return jsonify({"error": str(e)}), 400
-
-    finally:
-        cur.close()
-        conn.close()
-
-
-@app.route("/agregarFav/<nombre>", methods=["POST"])
-def agregar_favorito(nombre):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-        # 1️⃣ Verificar que exista en paises
-        cur.execute("""
-            SELECT id, nombre
-            FROM paises
-            WHERE LOWER(nombre) LIKE %s
-        """, (f"%{nombre.lower()}%",))
-
-        pais = cur.fetchone()
-
-        if not pais:
-            return jsonify({"error": "El país no existe en la base de datos"}), 404
-
-        # 2️⃣ Insertar en favoritos
-        cur.execute("""
-            INSERT INTO favoritos (id, nombre)
-            VALUES (%s, %s)
-            ON CONFLICT (id) DO NOTHING;
-        """, (pais[0], pais[1]))
-
-        conn.commit()
-
-        return jsonify({
-            "mensaje": "País agregado a favoritos",
-            "id": pais[0],
-            "nombre": pais[1]
-        })
-
-    except Exception as e:
-        conn.rollback()
-        return jsonify({"error": str(e)}), 500
-
-    finally:
-        cur.close()
-        conn.close()
-
-@app.route("/pais/<nombre>", methods=["GET"])
+@app.route("/api/pais/<nombre>", methods=["GET"])
 def obtener_pais(nombre):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    # 1️⃣ Buscar en base de datos
-    cur.execute("""
-        SELECT id, nombre, capital, moneda, recurso_visual
-        FROM paises
-        WHERE LOWER(nombre) = %s
-    """, (nombre.lower(),))
-
-
-    pais = cur.fetchone()
-
-    if pais:
-        cur.close()
-        conn.close()
-        return jsonify({
-            "id": pais[0],
-            "nombre": pais[1],
-            "capital": pais[2],
-            "moneda": pais[3],
-            "recurso_visual": pais[4],
-            "fuente": "base de datos"
-        })
-
-    # 2️⃣ Si no existe → consultar API externa
+    conn = None
     try:
-        response = requests.get(
-            f"https://restcountries.com/v3.1/name/{nombre}?fields=name,capital,currencies,cca3,flags"
-        )
-
-        if response.status_code != 200:
-            cur.close()
-            conn.close()
-            return jsonify({"error": "País no encontrado"}), 404
-
-        data = response.json()[0]
-
-        # Limpieza de datos
-        capital = data.get("capital", ["Desconocida"])[0]
-        moneda = list(data.get("currencies", {}).keys())[0] if data.get("currencies") else "N/A"
-        nombre_limpio = data.get("name", {}).get("common", "Desconocido")
-        codigo = data.get("cca3", "N/A")
-        bandera = data.get("flags", {}).get("png", "")
-
-        # 3️⃣ Guardar en PostgreSQL
+        conn = get_connection()
+        cur = conn.cursor()
+        nombre_input = nombre.strip()
+        nombre_clean = normalizar_texto(nombre_input)
+        
+        # 0. Aplicar sinónimo si existe
+        termino_busqueda = SINONIMOS_ESPANOL.get(nombre_clean, nombre_clean)
+        
+        # 1. Búsqueda local inteligente
         cur.execute("""
-            INSERT INTO paises (id, nombre, capital, moneda, recurso_visual)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (codigo, nombre_limpio, capital, moneda, bandera))
+            SELECT id, nombre, capital, moneda, recurso_visual, poblacion, region, area, mapa, idiomas, huso_horario
+            FROM paises WHERE nombre_normalizado = %s OR LOWER(nombre) = %s
+        """, (normalizar_texto(termino_busqueda), termino_busqueda.lower()))
+        
+        p = cur.fetchone()
 
+        # Validamos si el registro local es válido (idiomas ya traducidos)
+        if p and p[9] and all(idi not in p[9] for idi in ["Spanish", "English", "Danish"]):
+            return jsonify({
+                "id": p[0], "nombre": p[1], "capital": p[2], "moneda": p[3], 
+                "bandera": p[4], "poblacion": p[5], "region": p[6], "area": p[7], 
+                "mapa": p[8], "idiomas": p[9], "zonaHoraria": p[10]
+            })
+
+        # 2. Sincronización con API externa
+        # Intentamos endpoint de traducción primero
+        url = f"https://restcountries.com/v3.1/translation/{termino_busqueda}"
+        res = requests.get(url, timeout=5)
+        
+        if res.status_code != 200:
+            url = f"https://restcountries.com/v3.1/name/{termino_busqueda}"
+            res = requests.get(url, timeout=5)
+            
+        if res.status_code != 200:
+            return jsonify({"error": f"No se encontró el destino '{nombre_input}'"}), 404
+
+        data_list = res.json()
+        
+        # Buscamos la mejor coincidencia en la lista
+        target_data = None
+        for item in data_list:
+            nombre_es = item.get("translations", {}).get("spa", {}).get("common", "").lower()
+            if normalizar_texto(nombre_es) == normalizar_texto(termino_busqueda) or \
+               normalizar_texto(item.get("name", {}).get("common")) == normalizar_texto(termino_busqueda):
+                target_data = item
+                break
+        
+        if not target_data:
+            target_data = data_list[0]
+
+        # Extraer nombre común en español
+        nombre_final = target_data.get("translations", {}).get("spa", {}).get("common", target_data.get("name", {}).get("common"))
+        
+        # Validación estricta de idioma
+        if normalizar_texto(nombre_input) not in SINONIMOS_ESPANOL and \
+           normalizar_texto(nombre_input) != normalizar_texto(nombre_final):
+            return jsonify({"error": f"Búsqueda rechazada. Por favor use el nombre en español (ej. '{nombre_final}')"}), 400
+
+        # Procesar datos traducidos
+        region_raw = target_data.get("region", "N/A")
+        region_spa = TRADUCCION_REGIONES.get(region_raw, region_raw)
+        
+        capital_raw = target_data.get("capital", ["N/A"])[0]
+        capital_spa = TRADUCCION_CAPITALES.get(capital_raw, capital_raw)
+        
+        idiomas_list = list(target_data.get("languages", {}).values())
+        idiomas_spa = ", ".join([TRADUCCION_IDIOMAS.get(i, i) for i in idiomas_list])
+        
+        pais_data = {
+            "id": target_data.get("cca3", "UNK").upper(),
+            "nombre": nombre_final,
+            "nombre_normalizado": normalizar_texto(nombre_final),
+            "capital": capital_spa,
+            "moneda": ", ".join(target_data.get("currencies", {}).keys()) if target_data.get("currencies") else "N/A",
+            "bandera": target_data.get("flags", {}).get("png"),
+            "poblacion": f"{target_data.get('population', 0):,}",
+            "idiomas": idiomas_spa if idiomas_spa else "N/A",
+            "area": f"{target_data.get('area', 0):,} km²",
+            "region": region_spa,
+            "zonaHoraria": ", ".join(target_data.get("timezones", ["N/A"])),
+            "mapa": target_data.get("maps", {}).get("googleMaps")
+        }
+
+        # Guardar / Actualizar
+        cur.execute("""
+            INSERT INTO paises (id, nombre, nombre_normalizado, capital, moneda, recurso_visual, poblacion, region, area, mapa, idiomas, huso_horario)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (id) DO UPDATE 
+            SET nombre = EXCLUDED.nombre, nombre_normalizado = EXCLUDED.nombre_normalizado, capital = EXCLUDED.capital, 
+                region = EXCLUDED.region, idiomas = EXCLUDED.idiomas, huso_horario = EXCLUDED.huso_horario;
+        """, (pais_data["id"], pais_data["nombre"], pais_data["nombre_normalizado"], pais_data["capital"], 
+              pais_data["moneda"], pais_data["bandera"], pais_data["poblacion"], pais_data["region"], 
+              pais_data["area"], pais_data["mapa"], pais_data["idiomas"], pais_data["zonaHoraria"]))
+        
         conn.commit()
-
-        cur.close()
-        conn.close()
-
-        return jsonify({
-            "id": codigo,
-            "nombre": nombre_limpio,
-            "capital": capital,
-            "moneda": moneda,
-            "recurso_visual": bandera,
-            "fuente": "api externa"
-        })
+        return jsonify(pais_data)
 
     except Exception as e:
-        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn: conn.close()
+
+@app.route("/api/favoritos", methods=["GET", "POST"])
+def gestionar_favoritos():
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        if request.method == "POST":
+            pid = request.json.get("id", "").upper()
+            cur.execute("INSERT INTO favoritos (id) VALUES (%s) ON CONFLICT DO NOTHING", (pid,))
+            conn.commit()
+            return jsonify({"status": "ok"})
+        
+        cur.execute("SELECT p.id, p.nombre, p.recurso_visual FROM favoritos f JOIN paises p ON f.id = p.id ORDER BY p.nombre ASC")
+        favs = [{"id": r[0], "nombre": r[1], "bandera": r[2]} for r in cur.fetchall()]
+        return jsonify(favs)
+    finally:
         cur.close()
         conn.close()
+
+@app.route("/api/favoritos/<id>", methods=["DELETE"])
+def eliminar_favorito(id):
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM favoritos WHERE id = %s", (id.upper(),))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"status": "eliminado"})
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-# --- INICIO DE APLICACIÓN ---
 if __name__ == "__main__":
-    create_database()
-    create_tables()
-    app.run(debug=True)
+    init_db()
+    app.run(debug=True, port=5500)

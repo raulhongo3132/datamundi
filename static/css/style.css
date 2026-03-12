@@ -1,0 +1,164 @@
+:root {
+    --accent: #27dae0;
+    --heritage-dark: #0f172a;
+    --bg-light: #fcfcfc;
+    --bg-dark: #000000;
+}
+
+/* Estilos de Cuerpo y Patrón de Fondo */
+body {
+    font-family: 'Playfair Display', serif;
+    transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s ease;
+    background-image: radial-gradient(#e2e8f0 0.8px, transparent 0.8px);
+    background-size: 32px 32px;
+}
+
+/* Soporte para Modo Oscuro */
+.dark body {
+    background-color: var(--bg-dark);
+    color: #ffffff !important;
+    background-image: radial-gradient(#1a1a1a 0.8px, transparent 0.8px);
+}
+
+.light-mode-black { 
+    color: #000000 !important; 
+    transition: color 0.4s ease;
+}
+
+.dark .light-mode-black { 
+    color: #ffffff !important; 
+}
+
+button[onclick="toggleDarkMode()"] {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.dark button[onclick="toggleDarkMode()"] {
+    background-color: #111111 !important;
+    color: #ffffff !important;
+    border-color: #333333;
+}
+
+.font-sans-ui { 
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; 
+}
+
+.input-container {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0;
+    color: #000000 !important;
+    box-shadow: 0 10px 40px -15px rgba(0,0,0,0.08);
+}
+
+.dark .input-container {
+    background-color: #111111 !important;
+    border-color: #222;
+}
+
+@keyframes fade-in {
+    from { 
+        opacity: 0; 
+        transform: translateY(15px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
+}
+
+#search-result-container img, #fav-detail-container img {
+    filter: saturate(1.1) contrast(1.05);
+}
+
+.dark #search-result-container img, .dark #fav-detail-container img {
+    filter: saturate(0.9) brightness(0.9);
+}
+
+/* Estilo para los Toasts (Notificaciones) */
+#toast-container > div {
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+
+.bg-amber-400, 
+.bg-amber-500,
+.indicator,
+[class*="bg-amber-"],
+.bg-\[\#1a1c2c\] { /* Sobrescribe el fondo oscuro original del botón de mapas */
+    background-color: var(--accent) !important;
+    color: #ffffff !important;
+}
+
+button.bg-amber-400,
+button[onclick="buscarPais()"],
+button[onclick*="guardarFavorito"],
+a[href*="maps"], 
+a.bg-\[\#1a1c2c\] {
+    color: #ffffff !important;
+    background-color: var(--accent) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-block;
+    text-decoration: none;
+}
+
+button.bg-amber-400:hover,
+button[onclick="buscarPais()"]:hover,
+button[onclick*="guardarFavorito"]:hover,
+a[href*="maps"]:hover,
+a.bg-\[\#1a1c2c\]:hover {
+    filter: brightness(1.1);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -8px rgba(39, 218, 226, 0.5) !important;
+    color: #ffffff !important;
+}
+
+button.bg-amber-400:active,
+button[onclick="buscarPais()"]:active,
+button[onclick*="guardarFavorito"]:active,
+a[href*="maps"]:active,
+a.bg-\[\#1a1c2c\]:active {
+    transform: translateY(-1px);
+    filter: brightness(0.9);
+}
+
+.text-amber-400, 
+.text-amber-500,
+.text-amber-600,
+[class*="text-amber-"] {
+    color: var(--accent) !important;
+}
+
+.border-amber-400, 
+.border-amber-500,
+[class*="border-amber-"] {
+    border-color: var(--accent) !important;
+}
+
+div.w-10.h-10.bg-amber-400 {
+    background-color: var(--accent) !important;
+    transition: transform 0.6s ease;
+}
+
+div.w-10.h-10.bg-amber-400:hover {
+    transform: rotate(225deg) scale(1.1);
+}

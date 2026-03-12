@@ -1,39 +1,10 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 import httpx
-import uvicorn
-import sqlite3
-from pydantic import BaseModel
-import os
+import time
 
-class PaisFavorito(BaseModel):
-    id: str
-    nombre: str
+app = FastAPI(title="API de Países - Fase 2")
 
-# --- BASE DE DATOS ---
-def init_db():
-    conn = sqlite3.connect("datamundi.db")
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS favoritos (
-            id TEXT PRIMARY KEY,
-            nombre TEXT NOT NULL
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
-init_db()
-
-app = FastAPI(title="Datamundi API Elite")
-
-
-templates = Jinja2Templates(directory="templates")
-
-# --- CORS ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -42,96 +13,69 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/", response_class=HTMLResponse)
-async def leer_index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = (time.time() - start_time) * 1000
+    print(f"DEBUG: {request.method} {request.url.path} - Status: {response.status_code} - {process_time:.2f}ms")
+    return response
 
-# --- SERVICIO DE DATOS EXTERNOS (REST COUNTRIES) ---
+@app.get("/")
+async def root():
+    return {"mensaje": "API de Países en funcionamiento"}
+
+# 5. LÓGICA DEL PUENTE Y MAPEO DE DATOS
 @app.get("/pais/{nombre}")
 async def get_pais(nombre: str):
-    url = f"https://restcountries.com/v3.1/name/{nombre}"
+    # Usamos la URL que pediste, pero agregamos 'cca3' (ID) y 'flags' (Imagen) para cumplir tu rúbrica
+    external_url = "https://restcountries.com/v3.1/all?fields=name,capital,currencies,cca3,flags"
     
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(url)
+            response = await client.get(external_url)
+            todos_los_paises = response.json()
+            print(todos_los_paises)
             
-            if response.status_code == 404:
-                raise HTTPException(status_code=404, detail="Destino no encontrado en el radar.")
-                
-            response.raise_for_status()
-            data = response.json()
-            p = data[0] 
+            # 1. Filtramos la lista inmensa para encontrar solo el país que pidió el usuario
+            pais_encontrado = None
+            for pais in todos_los_paises:
+                # Comparamos en minúsculas para evitar errores si el usuario escribe "MeXiCo"
+                nombre_comun = pais.get("name", {}).get("common", "").lower()
+                if nombre.lower() in nombre_comun:
+                    pais_encontrado = pais
+                    break
             
-            # Formatear datos para el frontend
-            poblacion_raw = p.get("population", 0)
-            poblacion_fmt = "{:,}".format(poblacion_raw).replace(",", ".")
+            # Si terminamos de revisar la lista y no lo encontramos, lanzamos error 404
+            if not pais_encontrado:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"El país '{nombre}' no existe en la base de datos."
+                )
             
-            area_raw = p.get("area", 0)
-            area_fmt = "{:,}".format(area_raw).replace(",", ".") + " km²"
+            # Extraemos la primera capital y la primera moneda de forma segura
+            capitales = pais_encontrado.get("capital", ["Desconocida"])
+            capital_str = capitales[0] if capitales else "Desconocida"
             
-            idiomas = ", ".join(p.get("languages", {}).values()) if p.get("languages") else "No registrado"
-            
-            curr_dict = p.get("currencies", {})
-            monedas = []
-            for code, info in curr_dict.items():
-                monedas.append(f"{info.get('name')} ({info.get('symbol', code)})")
-            moneda_str = ", ".join(monedas) if monedas else "N/A"
+            monedas = list(pais_encontrado.get("currencies", {}).keys())
+            moneda_str = monedas[0] if monedas else "Desconocida"
 
-            return {
-                "id": p.get("cca3", "N/A"),
-                "nombre": p.get("translations", {}).get("spa", {}).get("common", p.get("name", {}).get("common", "Desconocido")),
-                "nombreOficial": p.get("translations", {}).get("spa", {}).get("official", "N/A"),
-                "capital": p.get("capital", ["N/A"])[0],
-                "region": p.get("region", "N/A"),
-                "poblacion": poblacion_fmt,
-                "idiomas": idiomas,
-                "moneda": moneda_str,
-                "area": area_fmt,
-                "zonaHoraria": p.get("timezones", ["UTC"])[0],
-                "bandera": p.get("flags", {}).get("png", ""),
-                "mapa": p.get("maps", {}).get("googleMaps", "")
+            # 2. Data Cleaning: Entregamos el JSON limpio con los 4 campos exactos del PDF
+            pais_limpio = {
+                "id": pais_encontrado.get("cca3", "N/A"),                                # 
+                "nombre": pais_encontrado.get("name", {}).get("common", "Desconocido"),  # [cite: 19]
+                "categoria": f"Capital: {capital_str} | Moneda: {moneda_str}",           # [cite: 20]
+                "recurso_visual": pais_encontrado.get("flags", {}).get("png", "")        # 
             }
             
+            return pais_limpio
+            
         except httpx.RequestError:
-            raise HTTPException(status_code=503, detail="Error de conexión con el servicio global.")
-
-# --- PERSISTENCIA (FAVORITOS) ---
-@app.post("/favoritos")
-async def guardar_favorito(pais: PaisFavorito):
-    try:
-        conn = sqlite3.connect("datamundi.db")
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO favoritos (id, nombre) VALUES (?, ?)", (pais.id, pais.nombre))
-        conn.commit()
-        conn.close()
-        return {"mensaje": f"¡{pais.nombre} guardado en su bitácora!"}
-    except sqlite3.IntegrityError:
-        raise HTTPException(status_code=400, detail="Este destino ya forma parte de su colección.")
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error en la base de datos local.")
-
-@app.get("/favoritos")
-async def obtener_favoritos():
-    conn = sqlite3.connect("datamundi.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM favoritos")
-    filas = cursor.fetchall()
-    conn.close()
-    return [dict(fila) for fila in filas]
-
-@app.delete("/favoritos/{id}")
-async def eliminar_favorito(id: str):
-    conn = sqlite3.connect("datamundi.db")
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM favoritos WHERE id = ?", (id,))
-    conn.commit()
-    eliminados = cursor.rowcount
-    conn.close()
-    
-    if eliminados == 0:
-        raise HTTPException(status_code=404, detail="Destino no encontrado.")
-    return {"mensaje": "Eliminado de la bitácora correctamente."}
+            raise HTTPException(
+                status_code=503,
+                detail="El servicio de Rest Countries falló."
+            )
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=1800, reload=True)
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
