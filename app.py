@@ -14,7 +14,7 @@ DB_HOST = "localhost"
 
 # --- DICCIONARIOS DE TRADUCCIÓN ---
 TRADUCCION_REGIONES = {
-    "Americas": "Américas",
+    "Americas": "América",
     "Europe": "Europa",
     "Africa": "África",
     "Oceania": "Oceanía",
