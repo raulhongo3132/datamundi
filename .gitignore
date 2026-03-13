@@ -17,3 +17,8 @@ venv/
 
 # Logs
 *.log
+
+.agents/
+AI_PROJECT_CONTEXT.md
+project_overview.md
+technical_debt.md
