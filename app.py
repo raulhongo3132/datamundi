@@ -76,6 +76,7 @@ SINONIMOS_ESPANOL = {
     "corea": "corea del sur",
     "groelandia": "groenlandia",
     "china": "china",
+    "spain": "españa",
 }
 
 

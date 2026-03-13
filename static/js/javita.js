@@ -257,7 +257,8 @@ function renderTicket(data, showAddBtn) {
                     </div>
                 </div>
                 
-                <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full"> <a href="${data.mapa}" target="_blank" class="w-full text-center px-6 py-3.5 text-[10px] font-black tracking-widest bg-[#1a1c2c] text-white uppercase hover:bg-white hover:text-black transition-all">
+                <div class="mt-12 grid grid-cols-1 ${showAddBtn ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3 w-full"> 
+                    <a href="${data.mapa}" target="_blank" class="w-full text-center px-6 py-3.5 text-[10px] font-black tracking-widest bg-[#1a1c2c] text-white uppercase hover:bg-white hover:text-black transition-all">
                         Ver Mapas
                     </a>
                     ${showAddBtn ? `
@@ -268,7 +269,6 @@ function renderTicket(data, showAddBtn) {
                     <button onclick="cargarTurismo('${data.latitud || ''}', '${data.longitud || ''}')" class="w-full text-center px-6 py-3.5 text-[10px] font-black tracking-widest bg-[#1a1c2c] text-white uppercase hover:bg-white hover:text-black transition-all">
                         Ver Lugares Turísticos
                     </button>
-                 
                </div>
                <div id="turismo-container" class="mt-6 w-full"></div>
             </div>
