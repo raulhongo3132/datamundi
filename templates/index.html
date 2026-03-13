@@ -38,6 +38,12 @@
             box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
         }
 
+        .dark .input-container {
+        background-color: #0a0a0a;
+        border: 1px solid #262626;
+        color: white;
+}
+
         @keyframes takeoff {
             0% { transform: translateY(0) rotate(-45deg); opacity: 0; }
             50% { transform: translateY(-10px) rotate(-45deg); opacity: 1; }
@@ -129,9 +135,10 @@
             <div id="nosotros-main-view">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-4">
                     <h3 class="text-7xl md:text-8xl font-serif leading-none light-mode-black">Nosotros</h3>
-                    <span id="nosotros-tagline" class="bg-amber-400 text-black px-6 py-2 rounded-full text-[11px] font-black tracking-widest uppercase shadow-lg">
-                        Conoce nuestro equipo
-                    </span>
+                <button onclick="mostrarEquipo()" 
+                class="bg-amber-400 text-black px-6 py-2 rounded-full text-[11px] font-black tracking-widest uppercase shadow-lg hover:bg-yellow-300 transition">
+                 Conoce nuestro equipo
+                </button>   
                 </div>
                 <div id="nosotros-list" class="grid gap-4">
                     <!-- Aquí se inyectará el contenido vía JS -->
@@ -230,35 +237,49 @@
                 lucide.createIcons();
             } catch (err) { showToast("Error al conectar", "error"); }
         }
-
         async function cargarNosotros() {
-            const list = document.getElementById('nosotros-list');
-            try {
-                const res = await fetch(`${API_URL}/Nosotros`);
-                const data = await res.json();
+        const list = document.getElementById("nosotros-list");
 
-                list.innerHTML = data.map(f => `
-                    <div class="bg-white dark:bg-neutral-950 p-10 rounded shadow-lg border border-slate-100 dark:border-neutral-900">
-                        <h4 class="text-3xl font-bold mb-4">${f.nombre}</h4>
-                        <p class="text-base text-gray-700 dark:text-gray-300">${f.descripcion}</p>
-                    </div>
-                `).join('');
+    try {
 
-                lucide.createIcons();
-            } catch (err) { showToast("Error al conectar", "error"); }
-        }
+    const response = await fetch(`${API_URL}/Nosotros`);
+    const data = await response.json();
 
-        async function guardarFavorito(id, nombre) {
-            try {
-                const res = await fetch(`${API_URL}/favoritos`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({id, nombre})
-                });
-                if(!res.ok) showToast("Ya existe en su bitácora", "error");
-                else showToast(`¡${nombre} añadido a su bitácora!`);
-            } catch (e) { showToast("Error de conexión", "error"); }
-        }
+    list.innerHTML = `
+    <div class="bg-white dark:bg-neutral-900 p-10 rounded shadow-lg border border-slate-100 dark:border-neutral-800 mb-10">
+        <p class="text-lg text-gray-700 dark:text-gray-300">
+            Datamundi es una plataforma diseñada para explorar información global de manera elegante e intuitiva.
+            Nuestro objetivo es ofrecer datos de países del mundo de forma clara, combinando tecnología moderna
+            con una experiencia visual atractiva.
+        </p>
+    </div>
+    `;
+
+    list.innerHTML += data.map(persona => `
+        <div class="bg-white dark:bg-neutral-900 
+                    p-10 rounded shadow-lg 
+                    border border-slate-100 dark:border-neutral-800
+                    cursor-pointer 
+                    hover:bg-gray-50 dark:hover:bg-neutral-800
+                    hover:border-amber-400 
+                    transition"="toggleEquipo(this)">
+
+            <h4 class="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
+                ${persona.nombre}
+            </h4>
+
+        </div>
+    `).join('');
+
+    } catch (err) {
+
+    console.error("Error al cargar el equipo", err);
+
+}
+
+
+}
+
 
         async function eliminarFavorito(id, nombre, e) {
             e.stopPropagation();
@@ -333,6 +354,10 @@
             `;
         }
         lucide.createIcons();
+        function mostrarEquipo() {
+        const equipo = document.getElementById("equipo-container");
+        equipo.classList.toggle("hidden");
+        }
     </script>
 </body>
 </html>

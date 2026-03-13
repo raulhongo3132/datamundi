@@ -133,5 +133,28 @@ async def eliminar_favorito(id: str):
         raise HTTPException(status_code=404, detail="Destino no encontrado.")
     return {"mensaje": "Eliminado de la bitácora correctamente."}
 
+# --- INFORMACIÓN DEL EQUIPO ---
+@app.get("/Nosotros")
+async def obtener_nosotros():
+    equipo = [
+        {
+            "nombre": "Rebeca Gómez González"
+        },
+        {
+            "nombre": "Karla Rocío Leal Rangel"
+        },
+        {
+            "nombre": "Duncan Ricardo Sansón Pérez ",
+            
+        },
+        {
+            "nombre": "Raúl Miguel Valverde Palacios",
+            
+        },
+
+    ]
+
+    return equipo
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=1800, reload=True)
