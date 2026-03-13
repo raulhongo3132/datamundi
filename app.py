@@ -435,6 +435,26 @@ def obtener_lugares_turisticos(lat, lon):
         return jsonify({"error": "Servicio de turismo temporalmente no disponible"}), 503
 
 
+# --- INFORMACIÓN DEL EQUIPO ---
+@app.route("/Nosotros", methods=["GET"])
+def obtener_nosotros():
+    equipo = [
+        {
+            "nombre": "Rebeca Gómez González"
+        },
+        {
+            "nombre": "Karla Rocío Leal Rangel"
+        },
+        {
+            "nombre": "Duncan Ricardo Sansón Pérez"
+        },
+        {
+            "nombre": "Raúl Miguel Valverde Palacios"
+        }
+    ]
+
+    return jsonify(equipo)
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=5500)

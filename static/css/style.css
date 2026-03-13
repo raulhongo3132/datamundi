@@ -30,16 +30,16 @@ body {
 }
 
 button[onclick="toggleDarkMode()"] {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    border: 1px solid #e2e8f0;
+    background-color: #111111 !important;
+    color: #ffffff !important;
+    border: 1px solid #333333;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .dark button[onclick="toggleDarkMode()"] {
-    background-color: #111111 !important;
-    color: #ffffff !important;
-    border-color: #333333;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #e2e8f0;
 }
 
 .font-sans-ui { 

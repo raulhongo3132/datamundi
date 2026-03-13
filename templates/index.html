@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Datamundi - First Class Global</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap"
         rel="stylesheet">
@@ -19,10 +24,10 @@
     <header class="max-w-6xl mx-auto py-20 px-6 flex flex-col items-center relative">
         <div class="absolute top-10 right-6">
             <button onclick="toggleDarkMode()"
-                class="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-full shadow-sm text-[10px] font-black tracking-[0.2em] uppercase hover:shadow-md transition-all active:scale-95 light-mode-black">
+                class="flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white border border-neutral-800 dark:border-slate-200 rounded-full shadow-sm text-[10px] font-black tracking-[0.2em] text-white dark:text-black uppercase hover:shadow-md transition-all active:scale-95">
                 <i data-lucide="moon" id="moon-icon" class="w-3.5 h-3.5"></i>
 
-                Vuelo Nocturno
+                Modo Oscuro
 
             </button>
 
@@ -63,6 +68,12 @@
 
                 <div class="indicator absolute bottom-0 left-0 w-full h-1 bg-amber-400 hidden"></div>
 
+            </button>
+
+            <button onclick="switchTab('nosotros')" id="tab-nosotros"
+                class="pb-6 text-[12px] font-black tracking-[0.3em] uppercase transition-all relative light-mode-black opacity-40">
+                Nosotros
+                <div class="indicator absolute bottom-0 left-0 w-full h-1 bg-amber-400 hidden"></div>
             </button>
 
         </div>
@@ -127,9 +138,28 @@
                 <div id="fav-detail-container"></div>
 
             </div>
-
         </section>
 
+        <section id="section-nosotros" class="hidden">
+            <div id="nosotros-main-view">
+                <div class="flex flex-col md:flex-row justify-between items-start mb-16 gap-8">
+                    <div class="max-w-xl">
+                        <h3 class="text-7xl md:text-8xl font-serif leading-none light-mode-black mb-6">Nosotros</h3>
+                        <p class="text-sm md:text-base font-sans-ui text-black/60 dark:text-white/60 leading-relaxed light-mode-black transition-colors">
+                            <strong class="font-black text-amber-500 tracking-wider">DATAMUNDI:</strong><br>
+                            Un motor de búsqueda que centraliza datos demográficos, cartográficos y turísticos en tiempo real. Explora destinos globales, descubre atracciones cercanas y archiva tus lugares favoritos en tu bitácora personal, todo a través de una experiencia digital.
+                        </p>
+                    </div>
+                    <button onclick="mostrarEquipo()"
+                        class="bg-amber-400 text-black px-6 py-4 rounded-sm text-[11px] font-black tracking-widest uppercase shadow-lg hover:bg-yellow-300 transition shrink-0 md:mt-4">
+                        Conoce nuestro equipo
+                    </button>
+                </div>
+                <div id="nosotros-list" class="grid gap-4">
+                    <!-- Aquí se inyectará el contenido vía JS -->
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Vinculación de JS usando Flask -->

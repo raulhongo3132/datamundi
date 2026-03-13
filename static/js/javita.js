@@ -8,7 +8,7 @@ function toggleDarkMode() {
 
     if (btn) {
         const iconName = isDark ? 'sun' : 'moon';
-        const text = isDark ? 'Vuelo Diurno' : 'Vuelo Nocturno';
+        const text = isDark ? 'Modo Claro' : 'Modo Oscuro';
 
         // Actualizamos el contenido del botón
         btn.innerHTML = `<i data-lucide="${iconName}" id="mode-icon" class="w-3.5 h-3.5"></i> ${text}`;
@@ -45,24 +45,32 @@ function showToast(message, type = 'info') {
 }
 
 function switchTab(tab) {
-    document.getElementById('section-explorar').classList.toggle('hidden', tab !== 'explorar');
-    document.getElementById('section-favoritos').classList.toggle('hidden', tab !== 'favoritos');
+    const tabs = ['explorar', 'favoritos', 'nosotros'];
 
-    const btnEx = document.getElementById('tab-explorar');
-    const btnFav = document.getElementById('tab-favoritos');
+    tabs.forEach(t => {
+        const section = document.getElementById(`section-${t}`);
+        const btn = document.getElementById(`tab-${t}`);
 
-    if (tab === 'explorar') {
-        btnEx.classList.remove('opacity-40');
-        btnFav.classList.add('opacity-40');
-        btnEx.querySelector('.indicator').classList.remove('hidden');
-        btnFav.querySelector('.indicator').classList.add('hidden');
-    } else {
-        btnFav.classList.remove('opacity-40');
-        btnEx.classList.add('opacity-40');
-        btnFav.querySelector('.indicator').classList.remove('hidden');
-        btnEx.querySelector('.indicator').classList.add('hidden');
+        if (section) {
+            section.classList.toggle('hidden', tab !== t);
+        }
+
+        if (btn) {
+            if (tab === t) {
+                btn.classList.remove('opacity-40');
+                btn.querySelector('.indicator').classList.remove('hidden');
+            } else {
+                btn.classList.add('opacity-40');
+                btn.querySelector('.indicator').classList.add('hidden');
+            }
+        }
+    });
+
+    if (tab === 'favoritos') {
         cerrarDetalle();
         cargarFavoritos();
+    } else if (tab === 'nosotros') {
+        document.getElementById("nosotros-list").innerHTML = "";
     }
 }
 
@@ -260,9 +268,7 @@ function renderTicket(data, showAddBtn) {
                     <button onclick="cargarTurismo('${data.latitud || ''}', '${data.longitud || ''}')" class="w-full text-center px-6 py-3.5 text-[10px] font-black tracking-widest bg-[#1a1c2c] text-white uppercase hover:bg-white hover:text-black transition-all">
                         Ver Lugares Turísticos
                     </button>
-                    <button onclick="alert('Módulo de gastronomía en desarrollo por el equipo.')" class="w-full text-center px-6 py-3.5 text-[10px] font-black tracking-widest bg-[#1a1c2c] text-white uppercase hover:bg-white hover:text-black transition-all">
-                        Ver Platillos Típicos
-                    </button>
+                 
                </div>
                <div id="turismo-container" class="mt-6 w-full"></div>
             </div>
@@ -330,6 +336,50 @@ async function cargarTurismo(lat, lon) {
         showToast(err.message, "error");
     }
 }
+
+async function mostrarEquipo() {
+    const list = document.getElementById("nosotros-list");
+    if (list.innerHTML.trim() !== "") {
+        list.innerHTML = "";
+    } else {
+        await cargarNosotros();
+    }
+}
+
+async function cargarNosotros() {
+    const list = document.getElementById("nosotros-list");
+
+    list.innerHTML = `<div class="py-20 text-center animate-pulse text-[11px] font-black tracking-widest uppercase opacity-50 light-mode-black transition-colors">Contactando a la tripulación...</div>`;
+
+    try {
+        const response = await fetch("/Nosotros");
+        if (!response.ok) throw new Error("Error en la respuesta del servidor");
+        const data = await response.json();
+
+        list.innerHTML = data.map(persona => `
+            <div class="bg-black/5 dark:bg-black p-8 border border-black/10 dark:border-white/10 flex items-center justify-between hover:border-amber-400 transition-all cursor-default shadow-sm hover:shadow-2xl group animate-fade-in">
+                <div class="flex items-center gap-8">
+                    <div class="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center text-black font-black text-xl shadow-lg">
+                        ${persona.nombre.trim().charAt(0)}
+                    </div>
+                    <div>
+                        <p class="text-[9px] font-black text-black/40 dark:text-white/40 uppercase tracking-[0.4em] mb-1">MEMBER</p>
+                        <h4 class="text-2xl md:text-3xl font-light text-black dark:text-white">${persona.nombre.trim()}</h4>
+                    </div>
+                </div>
+                <i data-lucide="award" class="w-8 h-8 text-black/20 dark:text-white/20 group-hover:text-amber-400 transition-colors"></i>
+            </div>
+        `).join("");
+
+        if (window.lucide) lucide.createIcons();
+
+    } catch (error) {
+        console.error("Error cargando equipo:", error);
+        list.innerHTML = `<div class="py-10 text-center text-red-500 font-bold uppercase tracking-widest text-[11px]">Error al contactar a la tripulación</div>`;
+        showToast("Error al cargar la información del equipo", "error");
+    }
+}
+
 /**
  * Inicialización al cargar la ventana.
  */
