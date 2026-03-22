@@ -25,10 +25,10 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
 
     // Clases para el diseño del toast
-    toast.className = `p-4 px-6 bg-white dark:bg-neutral-900 border-l-4 ${type === 'error' ? 'border-red-500' : 'border-amber-400'} shadow-2xl flex items-center gap-4 text-[11px] font-black uppercase tracking-widest light-mode-black animate-fade-in`;
+    toast.className = `p-4 px-6 bg-white dark:bg-neutral-900 border-l-4 ${type === 'error' ? 'border-red-500' : 'border-brand'} shadow-2xl flex items-center gap-4 text-[11px] font-black uppercase tracking-widest light-mode-black animate-fade-in`;
 
     toast.innerHTML = `
-        <i data-lucide="${type === 'error' ? 'x-circle' : 'check-circle'}" class="w-4 h-4 ${type === 'error' ? 'text-red-500' : 'text-amber-500'}"></i> 
+        <i data-lucide="${type === 'error' ? 'x-circle' : 'check-circle'}" class="w-4 h-4 ${type === 'error' ? 'text-red-500' : 'text-brand'}"></i> 
         ${message}
     `;
 
@@ -124,15 +124,15 @@ async function cargarFavoritos() {
         }
 
         list.innerHTML = data.map(f => `
-            <div onclick="verDetalleFavorito('${f.nombre}')" class="bg-black p-10 border border-white/10 flex items-center justify-between hover:border-amber-400 transition-all cursor-pointer shadow-2xl group animate-fade-in">
+            <div onclick="verDetalleFavorito('${f.nombre}')" class="bg-white dark:bg-[#0a0a0a] p-10 border border-black/10 dark:border-white/10 flex items-center justify-between hover:border-brand dark:hover:border-brand transition-all cursor-pointer shadow-2xl group animate-fade-in">
                 <div class="flex items-center gap-14">
-                    <span class="text-7xl font-serif text-amber-400 group-hover:scale-110 transition-transform duration-500">${f.id}</span>
+                    <span class="text-7xl font-serif text-brand group-hover:scale-110 transition-transform duration-500">${f.id}</span>
                     <div>
-                        <p class="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] mb-2">PASAPORTE CONFIRMADO</p>
-                        <h4 class="text-5xl font-light text-white">${f.nombre}</h4>
+                        <p class="text-[10px] font-black text-black/40 dark:text-white/40 uppercase tracking-[0.4em] mb-2">PASAPORTE CONFIRMADO</p>
+                        <h4 class="text-5xl font-light text-black dark:text-white">${f.nombre}</h4>
                     </div>
                 </div>
-                <button onclick="eliminarFavorito('${f.id}', '${f.nombre}', event)" class="text-white opacity-40 hover:opacity-100 hover:text-red-500 p-4 transition-all">
+                <button onclick="eliminarFavorito('${f.id}', '${f.nombre}', event)" class="text-black/40 dark:text-white/40 hover:opacity-100 hover:text-red-500 p-4 transition-all">
                     <i data-lucide="trash-2" class="w-8 h-8"></i>
                 </button>
             </div>
@@ -152,7 +152,7 @@ async function guardarFavorito(id, nombre) {
         const res = await fetch(`${API_URL}/favoritos`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: id.toUpperCase() })
+            body: JSON.stringify({ id: id.toUpperCase(), nombre: nombre })
         });
 
         if (!res.ok) {
@@ -230,64 +230,69 @@ function renderTicket(data, showAddBtn) {
     ];
 
     return `
-        <div class="w-full bg-[#0a0a0a] rounded-sm shadow-2xl overflow-hidden border border-white/5 animate-fade-in">
-            <div class="h-2 w-full bg-amber-400"></div>
-            <div class="p-6 md:p-10"> <div class="flex flex-col lg:flex-row justify-between items-start mb-10 border-b border-white/10 pb-8">
+        <div class="w-full bg-white dark:bg-[#0a0a0a] text-black dark:text-white rounded-sm shadow-2xl overflow-hidden border border-black/10 dark:border-white/5 animate-fade-in transition-colors duration-500">
+            <div class="h-2 w-full bg-brand"></div>
+            <div class="p-6 md:p-10"> 
+                <div class="flex flex-col lg:flex-row justify-between items-start mb-10 border-b border-black/10 dark:border-white/10 pb-8">
                     <div>
-                        <span class="text-[10px] font-black tracking-[0.4em] text-amber-400 uppercase">First Class Global</span>
-                        <h2 class="text-5xl md:text-6xl font-serif text-white mt-3 leading-none">${data.nombre}</h2> </div>
+                        <span class="text-[10px] font-black tracking-[0.4em] text-brand uppercase">First Class Global</span>
+                        <h2 class="text-5xl md:text-6xl font-serif mt-3 leading-none">${data.nombre}</h2> 
+                    </div>
                     <div class="text-left lg:text-right mt-6 lg:mt-0">
-                        <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest">GATEWAY</p>
-                        <p class="text-4xl md:text-5xl font-light text-amber-400 tracking-tighter">${data.id}</p>
+                        <p class="text-[9px] font-bold text-black/40 dark:text-white/40 uppercase tracking-widest">GATEWAY</p>
+                        <p class="text-4xl md:text-5xl font-light text-brand tracking-tighter">${data.id}</p>
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                    <div class="relative group flex justify-center bg-black/40 border border-white/5 p-4 rounded-sm">
+                    <div class="relative group flex justify-center bg-black/5 dark:bg-black/40 border border-black/5 dark:border-white/5 p-4 rounded-sm">
                         <img src="${data.bandera}" class="w-full h-56 object-contain drop-shadow-lg grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" alt="Bandera">
                     </div>
                     <div class="grid grid-cols-2 gap-x-6 gap-y-8 font-sans-ui content-center">
                         ${campos.map(item => `
                             <div class="space-y-1.5">
-                                <p class="text-[9px] font-black text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <p class="text-[9px] font-black text-brand uppercase tracking-widest flex items-center gap-1.5">
                                     <i data-lucide="${item.i}" class="w-3.5 h-3.5"></i> ${item.l}
                                 </p>
-                                <p class="text-lg font-bold text-white leading-tight">${item.v || 'N/A'}</p> </div>
+                                <p class="text-lg font-bold leading-tight">${item.v || 'N/A'}</p> 
+                            </div>
                         `).join('')}
                     </div>
                 </div>
                 
                 <div class="mt-12 grid grid-cols-1 ${showAddBtn ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3 w-full"> 
-                    <a href="${data.mapa}" target="_blank" class="w-full text-center px-6 py-3.5 text-[10px] font-black tracking-widest bg-[#1a1c2c] text-white uppercase hover:bg-white hover:text-black transition-all">
+                    <a href="${data.mapa}" target="_blank" class="w-full text-center px-6 py-3.5 text-[10px] font-black tracking-widest bg-neutral-900 dark:bg-[#1a1c2c] text-white uppercase hover:bg-brand transition-all">
                         Ver Mapas
                     </a>
                     ${showAddBtn ? `
-                        <button onclick="guardarFavorito('${data.id}', '${data.nombre}')" class="w-full text-center px-6 py-3.5 text-[10px] font-black tracking-widest bg-amber-400 text-black uppercase hover:bg-white hover:text-amber-600 transition-all shadow-sm hover:shadow-lg">
+                        <button onclick="guardarFavorito('${data.id}', '${data.nombre}')" class="w-full text-center px-6 py-3.5 text-[10px] font-black tracking-widest bg-brand text-white dark:text-black uppercase hover:bg-brand-hover transition-all shadow-sm hover:shadow-lg">
                             Favoritos
                         </button>
                     ` : ''}
-                    <button onclick="cargarTurismo('${data.latitud || ''}', '${data.longitud || ''}')" class="w-full text-center px-6 py-3.5 text-[10px] font-black tracking-widest bg-[#1a1c2c] text-white uppercase hover:bg-white hover:text-black transition-all">
+                    <button onclick="cargarTurismo('${data.latitud || ''}', '${data.longitud || ''}', this)" class="w-full text-center px-6 py-3.5 text-[10px] font-black tracking-widest bg-neutral-900 dark:bg-[#1a1c2c] text-white uppercase hover:bg-brand transition-all">
                         Ver Lugares Turísticos
                     </button>
                </div>
-               <div id="turismo-container" class="mt-6 w-full"></div>
+               <div class="contenedor-turismo mt-6 w-full"></div>
             </div>
         </div>
     `;
 }
 
-async function cargarTurismo(lat, lon) {
+// Nueva firma de función: acepta btnElement
+async function cargarTurismo(lat, lon, btnElement) {
     if (!lat || !lon) {
         showToast('Coordenadas no disponibles para este destino', 'error');
         return;
     }
 
-    const container = document.getElementById('turismo-container');
+    // Buscamos el contenedor relativo al botón que desencadenó la acción
+    const container = btnElement.parentElement.nextElementSibling;
 
     // Estado de carga (Loading UI)
     container.innerHTML = `
         <div class="py-10 text-center animate-pulse">
-            <p class="text-[11px] font-black text-amber-400 uppercase tracking-[0.3em]">
+            <p class="text-[11px] font-black text-brand uppercase tracking-[0.3em]">
                 Buscando Lugares Turísticos, espera un momento...
             </p>
         </div>
@@ -302,7 +307,7 @@ async function cargarTurismo(lat, lon) {
         if (!data.data || data.data.length === 0) {
             container.innerHTML = `
                 <div class="py-10 text-center">
-                    <p class="text-[10px] text-white/40 uppercase tracking-widest">
+                    <p class="text-[10px] text-black/40 dark:text-white/40 uppercase tracking-widest">
                         Sin datos turísticos en la zona centro.
                     </p>
                 </div>
@@ -310,18 +315,18 @@ async function cargarTurismo(lat, lon) {
             return;
         }
 
-        // Renderizado del Grid de Turismo
+        // Renderizado del Grid de Turismo adaptativo (Modo Claro/Oscuro)
         container.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full animate-fade-in">
                 ${data.data.map(lugar => `
-                    <div class="p-6 border border-white/10 bg-[#0f0f0f] hover:border-amber-400 transition-all duration-300">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-amber-400 mb-3">
+                    <div class="p-6 border border-black/10 dark:border-white/10 bg-black/5 dark:bg-[#0f0f0f] hover:border-brand dark:hover:border-brand transition-all duration-300">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-brand mb-3">
                             ${lugar.categoria} • ${lugar.distancia}
                         </p>
-                        <h4 class="text-xl font-serif text-white leading-tight mb-2">
+                        <h4 class="text-xl font-serif leading-tight mb-2">
                             ${lugar.nombre}
                         </h4>
-                        <p class="text-[11px] text-white/50 font-sans-ui truncate" title="${lugar.direccion}">
+                        <p class="text-[11px] text-black/50 dark:text-white/50 font-sans-ui truncate" title="${lugar.direccion}">
                             ${lugar.direccion}
                         </p>
                     </div>
@@ -357,9 +362,9 @@ async function cargarNosotros() {
         const data = await response.json();
 
         list.innerHTML = data.map(persona => `
-            <div class="bg-black/5 dark:bg-black p-8 border border-black/10 dark:border-white/10 flex items-center justify-between hover:border-amber-400 transition-all cursor-default shadow-sm hover:shadow-2xl group animate-fade-in">
+            <div class="bg-black/5 dark:bg-black p-8 border border-black/10 dark:border-white/10 flex items-center justify-between hover:border-brand transition-all cursor-default shadow-sm hover:shadow-2xl group animate-fade-in">
                 <div class="flex items-center gap-8">
-                    <div class="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center text-black font-black text-xl shadow-lg">
+                    <div class="w-12 h-12 bg-brand rounded-full flex items-center justify-center text-black font-black text-xl shadow-lg">
                         ${persona.nombre.trim().charAt(0)}
                     </div>
                     <div>
@@ -367,7 +372,7 @@ async function cargarNosotros() {
                         <h4 class="text-2xl md:text-3xl font-light text-black dark:text-white">${persona.nombre.trim()}</h4>
                     </div>
                 </div>
-                <i data-lucide="award" class="w-8 h-8 text-black/20 dark:text-white/20 group-hover:text-amber-400 transition-colors"></i>
+                <i data-lucide="award" class="w-8 h-8 text-black/20 dark:text-white/20 group-hover:text-brand transition-colors"></i>
             </div>
         `).join("");
 

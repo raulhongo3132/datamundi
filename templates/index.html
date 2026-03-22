@@ -5,12 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Datamundi - First Class Global</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class'
-        }
-    </script>
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap"
         rel="stylesheet">
@@ -35,7 +29,7 @@
 
         <div class="flex items-center gap-6 mb-4 group cursor-default">
             <div
-                class="w-10 h-10 bg-amber-400 rotate-45 group-hover:rotate-[225deg] transition-transform duration-1000 shadow-lg">
+                class="w-10 h-10 bg-brand rotate-45 group-hover:rotate-[225deg] transition-transform duration-1000 shadow-lg">
             </div>
             <h1
                 class="text-7xl md:text-8xl font-black tracking-tighter uppercase leading-none font-black light-mode-black transition-colors">
@@ -58,7 +52,7 @@
 
                 Búsqueda
 
-                <div class="indicator absolute bottom-0 left-0 w-full h-1 bg-amber-400"></div>
+                <div class="indicator absolute bottom-0 left-0 w-full h-1 bg-brand"></div>
             </button>
 
             <button onclick="switchTab('favoritos')" id="tab-favoritos"
@@ -66,14 +60,14 @@
 
                 Bitácora
 
-                <div class="indicator absolute bottom-0 left-0 w-full h-1 bg-amber-400 hidden"></div>
+                <div class="indicator absolute bottom-0 left-0 w-full h-1 hidden bg-brand"></div>
 
             </button>
 
             <button onclick="switchTab('nosotros')" id="tab-nosotros"
                 class="pb-6 text-[12px] font-black tracking-[0.3em] uppercase transition-all relative light-mode-black opacity-40">
                 Nosotros
-                <div class="indicator absolute bottom-0 left-0 w-full h-1 bg-amber-400 hidden"></div>
+                <div class="indicator absolute bottom-0 left-0 w-full h-1 hidden"></div>
             </button>
 
         </div>
@@ -84,7 +78,7 @@
         <section id="section-explorar" class="space-y-12">
             <div
                 class="bg-white dark:bg-neutral-950 p-10 md:p-14 rounded-sm shadow-xl border border-slate-100 dark:border-neutral-900 relative">
-                <div class="absolute top-0 left-0 h-1.5 w-full bg-amber-400"></div>
+                <div class="absolute top-0 left-0 h-1.5 w-full bg-brand"></div>
                 <h1 class="text-3xl mb-10 light-mode-black transition-colors">Destino global...</h1>
                 <div class="flex flex-col md:flex-row gap-0 items-stretch">
                     <div class="flex-1 relative input-container p-5">
@@ -92,7 +86,7 @@
                             class="font-sans-ui w-full bg-transparent border-none outline-none text-2xl font-light py-1 text-black light-mode-black">
                     </div>
                     <button onclick="buscarPais()"
-                        class="bg-amber-400 text-black px-12 py-5 font-black text-[12px] tracking-widest uppercase hover:bg-white hover:text-amber-600 transition-all active:scale-95 shadow-sm hover:shadow-lg">
+                        class="bg-brand text-white dark:text-black px-12 py-5 font-black text-[12px] tracking-widest uppercase hover:bg-brand-hover transition-all active:scale-95 shadow-sm hover:shadow-lg">
 
                         ¡Descubre!
 
@@ -114,7 +108,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-4">
                     <h3 class="text-7xl md:text-8xl font-serif leading-none light-mode-black">Favoritos</h3>
                     <span id="fav-counter"
-                        class="bg-amber-400 text-black px-6 py-2 rounded-full text-[11px] font-black tracking-widest uppercase shadow-lg">
+                        class="bg-brand text-white px-6 py-2 rounded-full text-[11px] font-black tracking-widest uppercase shadow-lg">
 
                         0 Destinos
 
@@ -129,7 +123,7 @@
             <div id="fav-detail" class="hidden">
 
                 <button onclick="cerrarDetalle()"
-                    class="mb-10 flex items-center gap-3 light-mode-black opacity-80 hover:opacity-100 hover:text-amber-500 text-[11px] font-black uppercase tracking-[0.3em] transition-all">
+                    class="mb-10 flex items-center gap-3 light-mode-black opacity-80 hover:opacity-100 text-[11px] font-black uppercase tracking-[0.3em] transition-all">
 
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver a favoritos
 
@@ -145,13 +139,16 @@
                 <div class="flex flex-col md:flex-row justify-between items-start mb-16 gap-8">
                     <div class="max-w-xl">
                         <h3 class="text-7xl md:text-8xl font-serif leading-none light-mode-black mb-6">Nosotros</h3>
-                        <p class="text-sm md:text-base font-sans-ui text-black/60 dark:text-white/60 leading-relaxed light-mode-black transition-colors">
-                            <strong class="font-black text-amber-500 tracking-wider">DATAMUNDI:</strong><br>
-                            Un motor de búsqueda que centraliza datos demográficos, cartográficos y turísticos en tiempo real. Explora destinos globales, descubre atracciones cercanas y archiva tus lugares favoritos en tu bitácora personal, todo a través de una experiencia digital.
+                        <p
+                            class="text-sm md:text-base font-sans-ui text-black/60 dark:text-white/60 leading-relaxed light-mode-black transition-colors">
+                            <strong class="font-black tracking-wider text-brand">DATAMUNDI:</strong><br>
+                            Un motor de búsqueda que centraliza datos demográficos, cartográficos y turísticos en tiempo
+                            real. Explora destinos globales, descubre atracciones cercanas y archiva tus lugares
+                            favoritos en tu bitácora personal, todo a través de una experiencia digital.
                         </p>
                     </div>
                     <button onclick="mostrarEquipo()"
-                        class="bg-amber-400 text-black px-6 py-4 rounded-sm text-[11px] font-black tracking-widest uppercase shadow-lg hover:bg-yellow-300 transition shrink-0 md:mt-4">
+                        class="bg-brand text-white dark:text-black hover:bg-brand-hover px-6 py-4 rounded-sm text-[11px] font-black tracking-widest uppercase shadow-lg transition shrink-0 md:mt-4">
                         Conoce nuestro equipo
                     </button>
                 </div>
